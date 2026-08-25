@@ -1,81 +1,99 @@
 # Preflight
 
-**Pre-signature privacy analysis for Starknet transactions.**
+Preflight is a pre-signature privacy simulator for STRK20 on Starknet — before you sign a transaction touching the shielded pool, it shows what stays publicly visible, your anonymity-set size, and amount/timing correlation risk.
 
-Preflight helps users understand what a proposed transaction may reveal **before they sign it**.
+Built for the **STRK20 Private Sprint hackathon**, Preflight addresses **IDEA-25 — Transaction privacy simulator**. It is a privacy-analysis tool, not a mixer: it does not move funds, execute swaps, or provide privacy by itself.
 
-Built for the **STRK20 Private Sprint hackathon**, Preflight addresses **IDEA-25 — Transaction privacy simulator**.
+> **Status: Day 1 — scaffold only**
 
-> **Preflight is a seatbelt, not a mixer.**
+There is no STRK20, Starknet, calldata, indexing, or scoring logic in this version. The repository currently provides only the typed application and package boundaries that later development days will fill in.
 
-It does not move funds, execute swaps, or provide privacy by itself. It analyzes a proposed transaction and explains potential privacy exposure using public on-chain data and transaction simulation.
-
-## What Preflight Does
-
-Before signing a transaction, Preflight aims to answer:
-
-- **What becomes public?**
-  - Addresses
-  - Token amounts
-  - Contract interactions
-  - Gas information
-  - Transaction timing
-
-- **What may be linkable?**
-  - Funding sources
-  - Destination addresses
-  - Change addresses
-  - Repeated transaction patterns
-
-- **How large is the effective anonymity set?**
-  - Recent matching activity
-  - Trailing 24-hour activity
-  - Trailing 7-day activity
-
-- **What correlation risks exist?**
-  - Exact-amount matches
-  - Round-number patterns
-  - Timing proximity
-  - Rapid deposit/withdrawal patterns
-  - Repeated-use behavioral fingerprints
-
-- **What changes when using STRK20?**
-  - Public transaction exposure
-  - STRK20-mediated exposure
-  - A side-by-side privacy comparison
-
-## Core Idea
-
-Most privacy failures do not necessarily happen because a privacy protocol is broken.
-
-They can happen because a user unknowingly creates a recognizable pattern around an otherwise private transaction.
-
-Preflight is designed to make those risks visible **before the transaction is signed**.
-
-## Architecture
+## Repository structure
 
 ```text
-Dapp / Wallet
-      |
-      v
-Preflight SDK Hook
-      |
-      v
-Preflight API
-      |
-      +--------------------+
-      |                    |
-      v                    v
-Transaction          Privacy Scoring
-Simulation           Engine
-      |                    |
-      v                    |
-Starknet RPC               |
-      |                    |
-      +---------+----------+
-                |
-                v
-        Privacy Report
-                |
-                v
-          User Interface
+preflight-strk20/
+├── README.md
+├── LICENSE
+├── .env.example
+├── .gitignore
+├── package.json
+├── tsconfig.base.json
+├── .github/workflows/ci.yml
+├── apps/
+│   ├── web/
+│   │   ├── src/
+│   │   │   ├── components/
+│   │   │   │   ├── ReportCard.tsx
+│   │   │   │   ├── DiffView.tsx
+│   │   │   │   ├── RiskBadge.tsx
+│   │   │   │   └── ConnectWallet.tsx
+│   │   │   ├── pages/
+│   │   │   │   ├── Home.tsx
+│   │   │   │   └── Report.tsx
+│   │   │   ├── lib/
+│   │   │   │   └── api-client.ts
+│   │   │   ├── App.tsx
+│   │   │   ├── index.css
+│   │   │   └── main.tsx
+│   │   ├── index.html
+│   │   ├── postcss.config.js
+│   │   ├── tailwind.config.ts
+│   │   ├── tsconfig.json
+│   │   ├── vite.config.ts
+│   │   └── package.json
+│   └── api/
+│       ├── src/
+│       │   ├── routes/
+│       │   │   ├── simulate.ts
+│       │   │   ├── report.ts
+│       │   │   └── health.ts
+│       │   ├── calldata/.gitkeep
+│       │   ├── indexer/.gitkeep
+│       │   └── server.ts
+│       ├── package.json
+│       └── tsconfig.json
+├── packages/
+│   ├── scoring/
+│   │   ├── src/index.ts
+│   │   ├── test/placeholder.test.ts
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── sdk-hook/
+│   │   ├── src/index.ts
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── shared-types/
+│       ├── src/index.ts
+│       ├── package.json
+│       └── tsconfig.json
+├── scripts/
+│   └── demo-wallet/.gitkeep
+└── test/
+```
+
+## Getting started
+
+Requirements: Node.js 22 and npm 9 or newer.
+
+```bash
+npm install
+npm run dev
+```
+
+The empty Vite application is served at `http://localhost:5173`. The Fastify API is served at `http://localhost:3001`; `GET /health` returns:
+
+```json
+{"status":"ok"}
+```
+
+## Checks
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+```
+
+## License
+
+MIT

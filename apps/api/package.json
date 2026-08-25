@@ -1,0 +1,9 @@
+{
+  "name": "@preflight/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "tsx watch src/server.ts", "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": { "fastify": "^5.0.0" },
+  "devDependencies": { "tsx": "^4.19.0" }
+}
