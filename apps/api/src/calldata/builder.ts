@@ -1,4 +1,4 @@
-import { CallData, hash, type Call } from 'starknet';
+import { CallData, type Call } from 'starknet';
 import type { PrivacyAction } from '@preflight/shared-types';
 
 export interface BuiltCalldata {
@@ -46,11 +46,13 @@ export async function buildCalldata(action: PrivacyAction): Promise<BuiltCalldat
   const pool = poolAddress();
   const calldata = [pool, ...amountCalldata(action.amount)];
   const call: Call = { contractAddress: action.token, entrypoint: 'transfer', calldata };
-  const transactionCalldata = CallData.compile('__execute__', [[{
-    to: action.token,
-    selector: hash.getSelectorFromName('transfer'),
-    calldata,
-  }]]);
+  const transactionCalldata = CallData.compile({
+    orderCalls: [{
+      contractAddress: action.token,
+      entrypoint: 'transfer',
+      calldata,
+    }],
+  });
   return {
     calls: [call],
     contractAddress: pool,
