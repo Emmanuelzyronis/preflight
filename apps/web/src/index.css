@@ -73,3 +73,14 @@ h1 {
 	background: #4d9364;
 	box-shadow: 0 0 0 4px rgba(77, 147, 100, 0.16);
 }
+
+.modeled-disclaimer {
+	margin-top: 1.5rem;
+	padding: 1rem 1.25rem;
+	border: 1px solid #c98a21;
+	background: #fff3cd;
+	color: #664d03;
+	font-family: 'Trebuchet MS', sans-serif;
+	font-size: 0.95rem;
+	line-height: 1.4;
+}

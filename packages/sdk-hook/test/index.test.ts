@@ -21,7 +21,9 @@ describe('wrapAccount', () => {
 
     await account.execute({ contractAddress: '0x123', entrypoint: 'apply_actions', calldata: [] });
 
-    expect(fetchMock).toHaveBeenCalledWith('http://api.test/simulate', expect.any(Object));
+    expect(fetchMock).toHaveBeenCalledWith('http://api.test/report', expect.objectContaining({
+      body: JSON.stringify({ calls: [{ contractAddress: '0x123', entrypoint: 'apply_actions', calldata: [] }], modeled: false }),
+    }));
     expect(events).toEqual(['simulate', 'execute']);
     expect(console.log).toHaveBeenCalledWith('[Preflight]', { gasEstimate: '0x1' });
   });

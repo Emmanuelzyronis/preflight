@@ -1,3 +1,5 @@
+import { Report } from './pages/Report';
+
 export function App() {
   return (
     <main className="app-shell">
@@ -11,6 +13,7 @@ export function App() {
           <span className="status-dot" aria-hidden="true" />
           Day 1 scaffold is online
         </div>
+        <Report modeled={false} />
       </section>
     </main>
   );

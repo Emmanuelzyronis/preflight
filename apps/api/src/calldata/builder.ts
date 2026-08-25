@@ -1,4 +1,4 @@
-import type { Call } from 'starknet';
+import { CallData, hash, type Call } from 'starknet';
 import type { PrivacyAction } from '@preflight/shared-types';
 
 export interface BuiltCalldata {
@@ -6,6 +6,13 @@ export interface BuiltCalldata {
   contractAddress: string;
   entrypoint: string;
   calldata: string[];
+  senderAddress?: string;
+  transactionCalldata?: string[];
+}
+
+export interface ModeledPreview extends BuiltCalldata {
+  modeled: true;
+  disclaimer: string;
 }
 
 export class NotImplementedError extends Error {
@@ -23,15 +30,54 @@ function poolAddress(): string {
   return value;
 }
 
-/**
- * The upstream Privacy SDK currently compiles actions only in the context of
- * viewing keys, notes, proving, and discovery providers. Those are deliberately
- * absent from this read-only API boundary, so no calldata is fabricated here.
- * Day 2 callers receive an explicit error until those privacy inputs are wired.
- */
+function amountCalldata(amount: string): string[] {
+  const value = BigInt(amount);
+  const lowMask = (1n << 128n) - 1n;
+  return [`0x${(value & lowMask).toString(16)}`, `0x${(value >> 128n).toString(16)}`];
+}
+
+/** Build the public ERC-20 deposit leg. No viewing key or wallet secret is used. */
 export async function buildCalldata(action: PrivacyAction): Promise<BuiltCalldata> {
-  poolAddress();
-  throw new NotImplementedError(
-    `Privacy SDK calldata compilation for ${action.type} requires viewing/proving inputs; TODO: wire the provider-backed compiler`,
-  );
+  if (action.type !== 'ShieldAction') {
+    throw new NotImplementedError(
+      `${action.type} calldata is wallet-built by @preflight/sdk-hook; use buildModeledPreview() for manual mode`,
+    );
+  }
+  const pool = poolAddress();
+  const calldata = [pool, ...amountCalldata(action.amount)];
+  const call: Call = { contractAddress: action.token, entrypoint: 'transfer', calldata };
+  const transactionCalldata = CallData.compile('__execute__', [[{
+    to: action.token,
+    selector: hash.getSelectorFromName('transfer'),
+    calldata,
+  }]]);
+  return {
+    calls: [call],
+    contractAddress: pool,
+    entrypoint: call.entrypoint,
+    calldata,
+    senderAddress: action.recipient,
+    transactionCalldata,
+  };
+}
+
+export async function buildModeledPreview(action: PrivacyAction): Promise<ModeledPreview> {
+  if (action.type === 'ShieldAction') {
+    throw new Error('ShieldAction must use buildCalldata()');
+  }
+  const pool = poolAddress();
+  const calldata = [action.recipient, ...amountCalldata(action.amount)];
+  const call: Call = {
+    contractAddress: pool,
+    entrypoint: action.type === 'PrivateSwapAction' ? 'privacy_invoke' : action.type === 'UnshieldAction' ? 'withdraw' : 'transfer',
+    calldata,
+  };
+  return {
+    calls: [call],
+    contractAddress: pool,
+    entrypoint: call.entrypoint,
+    calldata,
+    modeled: true,
+    disclaimer: 'This is a representative preview, not your real transaction shape. Connect a wallet for an exact analysis.',
+  };
 }

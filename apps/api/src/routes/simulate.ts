@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { isActionType, type PrivacyAction } from '@preflight/shared-types';
-import { buildCalldata, NotImplementedError } from '../calldata/builder.js';
+import { buildCalldata, buildModeledPreview, NotImplementedError } from '../calldata/builder.js';
 import { simulateAction } from '../calldata/simulate.js';
 
 export async function simulateRoutes(app: FastifyInstance): Promise<void> {
@@ -23,9 +23,13 @@ export async function simulateRoutes(app: FastifyInstance): Promise<void> {
     }
     try {
       const action = body as PrivacyAction;
+      if (action.type !== 'ShieldAction') {
+        const modeled = await buildModeledPreview(action);
+        return { calldata: modeled, modeled: true, disclaimer: modeled.disclaimer };
+      }
       const calldata = await buildCalldata(action);
       const simulation = await simulateAction(calldata);
-      return { calldata, simulation };
+      return { calldata, simulation, modeled: false };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Simulation failed';
       return reply.code(error instanceof NotImplementedError ? 501 : 500).send({ error: message });

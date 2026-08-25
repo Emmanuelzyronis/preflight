@@ -16,7 +16,7 @@ function touchesPool(input: unknown, poolAddress: string): input is Call | Call[
 }
 
 /**
- * Wrap Account.execute so pool-bound calls are simulated before signing.
+ * Wrap Account.execute so pool-bound calls are reported before signing.
  * This wrapper never signs, broadcasts, or imports code from an application.
  */
 export function wrapAccount(account: AccountInterface, options: WrapAccountOptions): AccountInterface {
@@ -31,10 +31,11 @@ export function wrapAccount(account: AccountInterface, options: WrapAccountOptio
   wrapped.execute = (async (...args: unknown[]) => {
     const calls = args[0];
     if (touchesPool(calls, poolAddress)) {
-      const response = await fetch(`${options.apiBaseUrl.replace(/\/$/, '')}/simulate`, {
+      const outgoingCalls = callsFromInput(calls as Call | Call[]);
+      const response = await fetch(`${options.apiBaseUrl.replace(/\/$/, '')}/report`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ calls }),
+        body: JSON.stringify({ calls: outgoingCalls, modeled: false }),
       });
       const report: unknown = await response.json();
       console.log('[Preflight]', report);
