@@ -4,9 +4,9 @@ Preflight is a pre-signature privacy simulator for STRK20 on Starknet — before
 
 Built for the **STRK20 Private Sprint hackathon**, Preflight addresses **IDEA-25 — Transaction privacy simulator**. It is a privacy-analysis tool, not a mixer: it does not move funds, execute swaps, or provide privacy by itself.
 
-> **Status: Day 1 — scaffold only**
+> **Status: Day 2 — calldata builder + sdk-hook online.**
 
-There is no STRK20, Starknet, calldata, indexing, or scoring logic in this version. The repository currently provides only the typed application and package boundaries that later development days will fill in.
+The API and SDK hook now expose read-only simulation boundaries. Signing, broadcasting, proving, and wallet/viewing-key handling remain intentionally out of scope.
 
 ## Repository structure
 
@@ -74,6 +74,7 @@ preflight-strk20/
 ## Getting started
 
 Requirements: Node.js 22 and npm 9 or newer.
+The Privacy SDK is published on GitHub Packages. Configure the `@starkware-libs` npm scope and a read-packages token before installing; never put that token in `.env` or commit it to this repository.
 
 ```bash
 npm install

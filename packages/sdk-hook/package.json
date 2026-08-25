@@ -4,5 +4,7 @@
   "private": true,
   "type": "module",
   "exports": "./src/index.ts",
-  "scripts": { "typecheck": "tsc -p tsconfig.json" }
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run" },
+  "dependencies": { "starknet": "10.5.0" },
+  "devDependencies": { "vitest": "^2.0.0" }
 }

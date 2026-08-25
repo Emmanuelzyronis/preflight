@@ -3,7 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "tsx watch src/server.ts", "typecheck": "tsc -p tsconfig.json" },
-  "dependencies": { "fastify": "^5.0.0" },
-  "devDependencies": { "tsx": "^4.19.0" }
+  "scripts": { "dev": "tsx watch src/server.ts", "typecheck": "tsc -p tsconfig.json", "test": "vitest run" },
+  "dependencies": {
+    "@preflight/shared-types": "0.1.0",
+    "@starkware-libs/starknet-privacy-sdk": "0.14.3-rc.5",
+    "fastify": "^5.0.0",
+    "starknet": "10.5.0"
+  },
+  "devDependencies": { "tsx": "^4.19.0", "vitest": "^2.0.0" }
 }
