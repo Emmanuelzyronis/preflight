@@ -1,5 +1,6 @@
 import type { AnonymitySetEstimate, PoolEvent } from './index.js';
 export function estimateAnonymitySet(events: PoolEvent[], token: string, amount: bigint, windowMs: number, toleranceBps = 500): AnonymitySetEstimate {
+  if (!Number.isFinite(windowMs) || windowMs < 0) throw new Error('windowMs must be a non-negative finite number');
   const now = events.length ? Math.max(...events.map(e => e.timestamp.getTime())) : Date.now();
   const inBand = (e: PoolEvent) => {
     if (e.token.toLowerCase() !== token.toLowerCase()) return false;
@@ -8,6 +9,10 @@ export function estimateAnonymitySet(events: PoolEvent[], token: string, amount:
     if (diff * 10000n > amount * BigInt(toleranceBps)) return false;
     return true;
   };
-  const count = (ms: number) => events.filter(e => inBand(e) && now - e.timestamp.getTime() <= ms).length;
+  // `windowMs` is the caller's fetched-data horizon; never count beyond it.
+  const count = (ms: number) => events.filter(e => {
+    const age = now - e.timestamp.getTime();
+    return inBand(e) && age >= 0 && age <= Math.min(ms, windowMs);
+  }).length;
   return { token, amount: amount.toString(), toleranceBps, within24h: count(86400000), within7d: count(7 * 86400000) };
 }
