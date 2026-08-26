@@ -7,6 +7,20 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: preflight
+          POSTGRES_USER: preflight
+          POSTGRES_PASSWORD: preflight
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U preflight -d preflight"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,3 +33,6 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
+        env:
+          DATABASE_URL: postgres://preflight:preflight@localhost:5432/preflight
+          STRK20_POOL_ADDRESS: '0x123'

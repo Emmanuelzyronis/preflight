@@ -4,7 +4,7 @@ Preflight is a pre-signature privacy simulator for STRK20 on Starknet — before
 
 Built for the **STRK20 Private Sprint hackathon**, Preflight addresses **IDEA-25 — Transaction privacy simulator**. It is a privacy-analysis tool, not a mixer: it does not move funds, execute swaps, or provide privacy by itself.
 
-> **Status: Day 2b -- shield calldata real; transfer/unshield/swap captured client-side via sdk-hook, modeled preview in manual mode.**
+> **Status: Day 3 -- chain indexer online, scanning STRK20 pool events.**
 
 The API and SDK hook now expose read-only simulation boundaries. Signing, broadcasting, proving, and wallet/viewing-key handling remain intentionally out of scope.
 
@@ -17,6 +17,7 @@ preflight-strk20/
 ├── .env.example
 ├── .gitignore
 ├── package.json
+├── docker-compose.yml
 ├── tsconfig.base.json
 ├── .github/workflows/ci.yml
 ├── apps/
@@ -47,8 +48,13 @@ preflight-strk20/
 │       │   │   ├── simulate.ts
 │       │   │   ├── report.ts
 │       │   │   └── health.ts
-│       │   ├── calldata/.gitkeep
-│       │   ├── indexer/.gitkeep
+│       │   ├── calldata/
+│       │   ├── indexer/
+│       │   │   ├── db.ts
+│       │   │   ├── queries.ts
+│       │   │   ├── scanner.ts
+│       │   │   ├── schema.sql
+│       │   │   └── sync.ts
 │       │   └── server.ts
 │       ├── package.json
 │       └── tsconfig.json
@@ -75,6 +81,14 @@ preflight-strk20/
 
 Requirements: Node.js 22 and npm 9 or newer.
 The Privacy SDK is published on GitHub Packages. Configure the `@starkware-libs` npm scope and a read-packages token before installing; never put that token in `.env` or commit it to this repository.
+
+Start Postgres for the indexer with `docker compose up -d`, then configure `DATABASE_URL`, `RPC_URL`, and `STRK20_POOL_ADDRESS` from `.env.example`.
+
+The API applies `apps/api/src/indexer/schema.sql` automatically on boot. To apply it manually:
+
+```bash
+psql "$DATABASE_URL" -f apps/api/src/indexer/schema.sql
+```
 
 ```bash
 npm install
