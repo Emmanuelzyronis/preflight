@@ -1,0 +1,5 @@
+import type { DecayWarning, PoolEvent } from './index.js';
+export function scoreRepeatedUseDecay(history: PoolEvent[]): DecayWarning | null {
+  if(history.length<3) return null; const counterparties=new Set(history.map(e=>e.caller_address.toLowerCase())).size===1; const amounts=history.map(e=>e.amount); const sameRound=amounts.every(a=>/^\d*0+$/.test(a)); const gaps=history.slice(1).map((e,i)=>e.timestamp.getTime()-history[i].timestamp.getTime()); const cadence=gaps.length>1 && Math.max(...gaps)-Math.min(...gaps)<=60000;
+  const reasons:string[]=[]; if(counterparties) reasons.push('Repeated actions involve the same counterparty.'); if(sameRound) reasons.push('Repeated round-number amounts reduce the effective anonymity set.'); if(cadence) reasons.push('Actions follow a regular cadence that is easy to correlate.'); if(!reasons.length) return null; return { score:Math.min(100,reasons.length*30), reasons, pattern:{sameCounterparty:counterparties,sameRoundAmount:sameRound,sameCadence:cadence} };
+}

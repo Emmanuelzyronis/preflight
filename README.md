@@ -4,7 +4,7 @@ Preflight is a pre-signature privacy simulator for STRK20 on Starknet — before
 
 Built for the **STRK20 Private Sprint hackathon**, Preflight addresses **IDEA-25 — Transaction privacy simulator**. It is a privacy-analysis tool, not a mixer: it does not move funds, execute swaps, or provide privacy by itself.
 
-> **Status: Day 3 -- chain indexer online, scanning STRK20 pool events.**
+> **Status: Day 4 -- scoring engine online, /report returns real privacy analysis.**
 
 The API and SDK hook now expose read-only simulation boundaries. Signing, broadcasting, proving, and wallet/viewing-key handling remain intentionally out of scope.
 
