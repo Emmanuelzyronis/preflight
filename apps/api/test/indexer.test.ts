@@ -2,7 +2,7 @@ import { beforeAll, beforeEach, afterAll, describe, expect, it } from 'vitest';
 import { hash } from 'starknet';
 import { createDatabasePool, ensureSchema } from '../src/indexer/db.js';
 import { scanRange, type EventsProvider } from '../src/indexer/scanner.js';
-import { getCounterSnapshot, getEventsByAmount, getEventsInWindow } from '../src/indexer/queries.js';
+import { createIndexerQueries, type IndexerQueries } from '../src/indexer/queries.js';
 import type { Pool } from 'pg';
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
@@ -13,6 +13,7 @@ const withdrawalSelector = hash.getSelectorFromName('privacy::events::Withdrawal
 
 describe.skipIf(!hasDatabase)('indexer scanner and SQL queries', () => {
   let pool: Pool;
+  let queries: IndexerQueries;
   const provider = {
     getEvents: async () => ({ events: [
       { keys: [depositSelector, '0x111', token], data: ['0x64'], block_number: 10, transaction_hash: '0xtx1', event_index: 0 },
@@ -26,6 +27,7 @@ describe.skipIf(!hasDatabase)('indexer scanner and SQL queries', () => {
     process.env.STRK20_POOL_ADDRESS = poolAddress;
     pool = createDatabasePool();
     await ensureSchema(pool);
+    queries = createIndexerQueries(pool);
   });
   beforeEach(async () => {
     await pool.query('TRUNCATE pool_events, channel_counters, subchannel_counters, note_counters, nullifiers RESTART IDENTITY');
@@ -45,8 +47,8 @@ describe.skipIf(!hasDatabase)('indexer scanner and SQL queries', () => {
     await scanRange(pool, provider, 10, 11);
     const since = new Date(1_700_000_000 * 1000);
     const until = new Date(1_700_000_020 * 1000);
-    expect((await getEventsInWindow(pool, token, since, until)).length).toBe(2);
-    expect((await getEventsByAmount(pool, token, '100', 100, since)).length).toBe(1);
-    expect(await getCounterSnapshot(pool, token)).toEqual({ channels: 0, subchannels: 0, notes: 2 });
+    expect((await queries.getEventsInWindow(token, since, until)).length).toBe(2);
+    expect((await queries.getEventsByAmount(token, '100', 100, since)).length).toBe(1);
+    expect(await queries.getCounterSnapshot(token)).toEqual({ channels: 0, subchannels: 0, notes: 2 });
   });
 });

@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS pool_events (
   timestamp TIMESTAMPTZ NOT NULL,
   tx_hash TEXT NOT NULL,
   event_index INTEGER NOT NULL,
-  event_type TEXT NOT NULL CHECK (event_type IN ('deposit', 'withdraw'))
+  event_type TEXT NOT NULL CHECK (event_type IN ('deposit', 'withdraw')),
+  CONSTRAINT pool_events_tx_event_unique UNIQUE (tx_hash, event_index)
 );
 
 CREATE INDEX IF NOT EXISTS pool_events_token_timestamp_idx ON pool_events (token, timestamp);

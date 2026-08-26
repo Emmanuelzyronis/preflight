@@ -13,7 +13,9 @@ export function startIndexerSync(pool: Pool): SyncHandle {
     if (!provider) throw new Error('RPC_URL must be configured for indexer sync');
     const latest = await provider.getBlockNumber();
     const state = await pool.query<{ last_synced_block: string }>('SELECT last_synced_block FROM sync_state WHERE id = 1');
-    const from = Number(state.rows[0]?.last_synced_block ?? 0) + 1;
+    const checkpoint = Number(state.rows[0]?.last_synced_block ?? 0);
+    const configuredStart = Number(process.env.INDEXER_START_BLOCK ?? Math.max(0, latest - 1000));
+    const from = checkpoint > 0 ? checkpoint + 1 : configuredStart;
     if (from <= latest) await scanRange(pool, provider, from, latest);
   };
   const run = () => { void syncOnce().catch((error: unknown) => console.error('[Indexer] sync failed', error)); };
