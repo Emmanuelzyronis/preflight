@@ -84,10 +84,10 @@ The Privacy SDK is published on GitHub Packages. Configure the `@starkware-libs`
 
 Start Postgres for the indexer with `docker compose up -d`, then configure `DATABASE_URL`, `RPC_URL`, and `STRK20_POOL_ADDRESS` from `.env.example`.
 
-The API applies `apps/api/src/indexer/schema.sql` automatically on boot. To apply it manually:
+The API applies `apps/api/src/indexer/schema.sql` automatically on boot. To apply it manually through the Compose Postgres container:
 
 ```bash
-psql "$DATABASE_URL" -f apps/api/src/indexer/schema.sql
+npm run db:setup
 ```
 
 ```bash

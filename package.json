@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace @preflight/web\" \"npm run dev --workspace @preflight/api\"",
+    "db:setup": "bash scripts/init-db.sh",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "test": "npm run test --workspaces --if-present"
