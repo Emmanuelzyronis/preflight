@@ -9,8 +9,15 @@ CREATE TABLE IF NOT EXISTS pool_events (
   tx_hash TEXT NOT NULL,
   event_index INTEGER NOT NULL,
   event_type TEXT NOT NULL CHECK (event_type IN ('deposit', 'withdraw')),
+  withdrawal_auditor_public_key TEXT,
+  withdrawal_ephemeral_pubkey TEXT,
+  withdrawal_enc_user_addr TEXT,
   CONSTRAINT pool_events_tx_event_unique UNIQUE (tx_hash, event_index)
 );
+
+ALTER TABLE pool_events ADD COLUMN IF NOT EXISTS withdrawal_auditor_public_key TEXT;
+ALTER TABLE pool_events ADD COLUMN IF NOT EXISTS withdrawal_ephemeral_pubkey TEXT;
+ALTER TABLE pool_events ADD COLUMN IF NOT EXISTS withdrawal_enc_user_addr TEXT;
 
 CREATE INDEX IF NOT EXISTS pool_events_token_timestamp_idx ON pool_events (token, timestamp);
 CREATE INDEX IF NOT EXISTS pool_events_token_amount_idx ON pool_events (token, amount);

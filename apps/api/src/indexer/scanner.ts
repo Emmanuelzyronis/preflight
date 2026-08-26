@@ -38,6 +38,26 @@ function amount(value: string | undefined): string {
   return parsed.toString();
 }
 
+export interface ParsedWithdrawal {
+  toAddress: string;
+  token: string;
+  auditorPublicKey: string;
+  ephemeralPubkey: string;
+  encryptedUserAddress: string;
+  amount: string;
+}
+
+export function parseWithdrawalEvent(event: RawEvent): ParsedWithdrawal {
+  return {
+    toAddress: felt(event.keys[1]),
+    token: felt(event.keys[2]),
+    auditorPublicKey: felt(event.data[0]),
+    ephemeralPubkey: felt(event.data[1]),
+    encryptedUserAddress: felt(event.data[2]),
+    amount: amount(event.data[3]),
+  };
+}
+
 async function scanChunk(pool: Pool, provider: EventsProvider, fromBlock: number, toBlock: number): Promise<ScanResult> {
   const address = process.env.STRK20_POOL_ADDRESS;
   if (!address) throw new Error('STRK20_POOL_ADDRESS must be configured for the indexer');
@@ -60,14 +80,21 @@ async function scanChunk(pool: Pool, provider: EventsProvider, fromBlock: number
       const selector = event.keys[0];
       if (DEPOSIT_SELECTORS.has(selector) || WITHDRAW_SELECTORS.has(selector)) {
         const isDeposit = DEPOSIT_SELECTORS.has(selector);
-        const token = felt(event.keys[isDeposit ? 2 : 2]);
-        const caller = felt(event.keys[1]);
+        const withdrawal = !isDeposit ? parseWithdrawalEvent(event) : undefined;
+        const token = withdrawal?.token ?? felt(event.keys[2]);
+        const caller = withdrawal?.toAddress ?? felt(event.keys[1]);
         const eventIndex = event.event_index ?? eventOrdinals.get(event.transaction_hash) ?? 0;
         eventOrdinals.set(event.transaction_hash, eventIndex + 1);
         const result = await client.query(
-          `INSERT INTO pool_events (event_key, token, amount, caller_address, block_number, timestamp, tx_hash, event_index, event_type)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (event_key) DO NOTHING`,
-          [`${event.transaction_hash}:${eventIndex}`, token, amount(event.data[0]), caller, block, timestamp, event.transaction_hash, eventIndex, isDeposit ? 'deposit' : 'withdraw'],
+          `INSERT INTO pool_events (event_key, token, amount, caller_address, block_number, timestamp, tx_hash, event_index, event_type,
+             withdrawal_auditor_public_key, withdrawal_ephemeral_pubkey, withdrawal_enc_user_addr)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT (event_key) DO NOTHING`,
+          [
+            `${event.transaction_hash}:${eventIndex}`, token,
+            withdrawal?.amount ?? amount(event.data[0]), caller, block, timestamp,
+            event.transaction_hash, eventIndex, isDeposit ? 'deposit' : 'withdraw',
+            withdrawal?.auditorPublicKey ?? null, withdrawal?.ephemeralPubkey ?? null, withdrawal?.encryptedUserAddress ?? null,
+          ],
         );
         inserted += result.rowCount ?? 0;
         if ((result.rowCount ?? 0) > 0) {

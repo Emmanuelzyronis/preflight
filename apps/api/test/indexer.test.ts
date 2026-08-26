@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, afterAll, describe, expect, it } from 'vitest';
 import { hash } from 'starknet';
 import { createDatabasePool, ensureSchema } from '../src/indexer/db.js';
-import { scanRange, type EventsProvider } from '../src/indexer/scanner.js';
+import { parseWithdrawalEvent, scanRange, type EventsProvider } from '../src/indexer/scanner.js';
 import { createIndexerQueries, type IndexerQueries } from '../src/indexer/queries.js';
 import type { Pool } from 'pg';
 
@@ -17,7 +17,7 @@ describe.skipIf(!hasDatabase)('indexer scanner and SQL queries', () => {
   const provider = {
     getEvents: async () => ({ events: [
       { keys: [depositSelector, '0x111', token], data: ['0x64'], block_number: 10, transaction_hash: '0xtx1', event_index: 0 },
-      { keys: [withdrawalSelector, '0x222', token], data: ['0x32'], block_number: 11, transaction_hash: '0xtx2', event_index: 1 },
+      { keys: [withdrawalSelector, '0x222', token], data: ['0xaudit', '0xeph', '0xenc', '0x32'], block_number: 11, transaction_hash: '0xtx2', event_index: 1 },
     ] }),
     getBlock: async ({ block_number }: { block_number: number }) => ({ timestamp: 1_700_000_000 + block_number }),
     getBlockNumber: async () => 11,
@@ -41,6 +41,17 @@ describe.skipIf(!hasDatabase)('indexer scanner and SQL queries', () => {
     expect(first.inserted).toBe(2);
     expect(second.inserted).toBe(0);
     expect((await pool.query('SELECT count(*)::int AS count FROM pool_events')).rows[0].count).toBe(2);
+  });
+
+  it('maps withdrawal ABI fields in their declared order', () => {
+    expect(parseWithdrawalEvent({
+      keys: [withdrawalSelector, '0xto', token],
+      data: ['0xaudit', '0xeph', '0xenc', '0x1234'],
+      transaction_hash: '0xfixture',
+    })).toEqual({
+      toAddress: '0xto', token, auditorPublicKey: '0xaudit', ephemeralPubkey: '0xeph',
+      encryptedUserAddress: '0xenc', amount: '4660',
+    });
   });
 
   it('supports time-window, amount-tolerance, and counter queries', async () => {

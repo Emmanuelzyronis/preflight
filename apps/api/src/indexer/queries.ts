@@ -1,7 +1,11 @@
 import type { Pool } from 'pg';
 import { createDatabasePool } from './db.js';
 
-export interface PoolEvent { id: number; event_key: string; token: string; amount: string; caller_address: string; block_number: number; timestamp: Date; tx_hash: string; event_index: number; event_type: 'deposit' | 'withdraw'; }
+export interface PoolEvent {
+  id: number; event_key: string; token: string; amount: string; caller_address: string; block_number: number;
+  timestamp: Date; tx_hash: string; event_index: number; event_type: 'deposit' | 'withdraw';
+  withdrawal_auditor_public_key?: string | null; withdrawal_ephemeral_pubkey?: string | null; withdrawal_enc_user_addr?: string | null;
+}
 
 export interface IndexerQueries {
   getEventsInWindow(token: string, sinceTimestamp: Date, untilTimestamp: Date): Promise<PoolEvent[]>;
