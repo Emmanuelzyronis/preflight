@@ -7,7 +7,9 @@ export interface SyncHandle { stop: () => void; syncOnce: () => Promise<void>; }
 export function startIndexerSync(pool: Pool): SyncHandle {
   const rpcUrl = process.env.RPC_URL;
   const intervalMs = Number(process.env.SYNC_INTERVAL_MS ?? 60000);
-  let timer: ReturnType<typeof setInterval> | undefined;
+  const timer = setInterval(() => {
+    void syncOnce().catch((error: unknown) => console.error('[Indexer] sync failed', error));
+  }, intervalMs);
   const provider = rpcUrl ? new RpcProvider({ nodeUrl: rpcUrl }) as unknown as EventsProvider : undefined;
   const syncOnce = async (): Promise<void> => {
     if (!provider) throw new Error('RPC_URL must be configured for indexer sync');
@@ -18,8 +20,6 @@ export function startIndexerSync(pool: Pool): SyncHandle {
     const from = checkpoint > 0 ? checkpoint + 1 : configuredStart;
     if (from <= latest) await scanRange(pool, provider, from, latest);
   };
-  const run = () => { void syncOnce().catch((error: unknown) => console.error('[Indexer] sync failed', error)); };
-  timer = setInterval(run, intervalMs);
-  run();
-  return { stop: () => { if (timer) clearInterval(timer); }, syncOnce };
+  void syncOnce().catch((error: unknown) => console.error('[Indexer] sync failed', error));
+  return { stop: () => { clearInterval(timer); }, syncOnce };
 }
