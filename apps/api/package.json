@@ -3,7 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "tsx watch src/server.ts", "typecheck": "tsc -p tsconfig.json", "test": "vitest run" },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "tsx test/setup-database.ts && vitest run",
+    "db:reset": "tsx src/indexer/reset.ts"
+  },
   "dependencies": {
     "@preflight/shared-types": "0.1.0",
     "@starkware-libs/starknet-privacy-sdk": "0.14.3-rc.5",

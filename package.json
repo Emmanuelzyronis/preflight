@@ -11,7 +11,8 @@
     "db:setup": "bash scripts/init-db.sh",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "db:reset": "npm run db:reset --workspace @preflight/api"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

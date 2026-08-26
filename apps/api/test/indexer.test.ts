@@ -5,7 +5,7 @@ import { scanRange, type EventsProvider } from '../src/indexer/scanner.js';
 import { createIndexerQueries, type IndexerQueries } from '../src/indexer/queries.js';
 import type { Pool } from 'pg';
 
-const hasDatabase = Boolean(process.env.DATABASE_URL);
+const hasDatabase = Boolean(process.env.TEST_DATABASE_URL);
 const poolAddress = '0x123';
 const token = '0xabc';
 const depositSelector = hash.getSelectorFromName('privacy::events::Deposit');
@@ -25,7 +25,7 @@ describe.skipIf(!hasDatabase)('indexer scanner and SQL queries', () => {
 
   beforeAll(async () => {
     process.env.STRK20_POOL_ADDRESS = poolAddress;
-    pool = createDatabasePool();
+    pool = createDatabasePool(process.env.TEST_DATABASE_URL);
     await ensureSchema(pool);
     queries = createIndexerQueries(pool);
   });

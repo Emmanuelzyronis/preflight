@@ -19,6 +19,9 @@ export interface EventsProvider {
 
 export interface ScanResult { scanned: number; inserted: number; lastBlock: number; }
 
+const DEFAULT_SCAN_CHUNK_SIZE = 2000;
+const MAX_RETRIES = 4;
+
 const selectors = (name: string): Set<string> => new Set([hash.getSelectorFromName(name), hash.getSelectorFromName(`privacy::events::${name}`)]);
 const DEPOSIT_SELECTORS = selectors('Deposit');
 const WITHDRAW_SELECTORS = selectors('Withdrawal');
@@ -35,7 +38,7 @@ function amount(value: string | undefined): string {
   return parsed.toString();
 }
 
-export async function scanRange(pool: Pool, provider: EventsProvider, fromBlock: number, toBlock: number): Promise<ScanResult> {
+async function scanChunk(pool: Pool, provider: EventsProvider, fromBlock: number, toBlock: number): Promise<ScanResult> {
   const address = process.env.STRK20_POOL_ADDRESS;
   if (!address) throw new Error('STRK20_POOL_ADDRESS must be configured for the indexer');
   if (toBlock < fromBlock) return { scanned: 0, inserted: 0, lastBlock: fromBlock - 1 };
@@ -84,4 +87,38 @@ export async function scanRange(pool: Pool, provider: EventsProvider, fromBlock:
     await client.query('UPDATE sync_state SET last_synced_block = GREATEST(last_synced_block, $1) WHERE id = 1', [toBlock]);
   });
   return { scanned: events.length, inserted, lastBlock: toBlock };
+}
+
+export async function scanRange(pool: Pool, provider: EventsProvider, fromBlock: number, toBlock: number): Promise<ScanResult> {
+  if (toBlock < fromBlock) return { scanned: 0, inserted: 0, lastBlock: fromBlock - 1 };
+  const configuredChunkSize = Number(process.env.SCAN_CHUNK_SIZE ?? DEFAULT_SCAN_CHUNK_SIZE);
+  const chunkSize = Number.isFinite(configuredChunkSize) && configuredChunkSize > 0 ? Math.floor(configuredChunkSize) : DEFAULT_SCAN_CHUNK_SIZE;
+  const chunkCount = Math.ceil((toBlock - fromBlock + 1) / chunkSize);
+  console.info(`[indexer] starting backfill: ${fromBlock} -> ${toBlock} (~${chunkCount} chunks at ${chunkSize} blocks each)`);
+  let scanned = 0;
+  let inserted = 0;
+  let checkpoint = fromBlock - 1;
+  for (let chunkFrom = fromBlock; chunkFrom <= toBlock; chunkFrom += chunkSize) {
+    const chunkTo = Math.min(toBlock, chunkFrom + chunkSize - 1);
+    let result: ScanResult | undefined;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
+      try {
+        result = await scanChunk(pool, provider, chunkFrom, chunkTo);
+        break;
+      } catch (error: unknown) {
+        if (attempt === MAX_RETRIES) {
+          console.error(`[indexer] chunk ${chunkFrom}-${chunkTo} failed after ${MAX_RETRIES + 1} attempts`, error);
+          throw error;
+        }
+        const delayMs = 500 * 2 ** attempt;
+        console.error(`[indexer] chunk ${chunkFrom}-${chunkTo} failed (attempt ${attempt + 1}/${MAX_RETRIES + 1}); retrying in ${delayMs}ms`, error);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+    scanned += result?.scanned ?? 0;
+    inserted += result?.inserted ?? 0;
+    checkpoint = result?.lastBlock ?? checkpoint;
+    console.info(`[indexer] scanned ${chunkFrom}-${chunkTo}, found ${result?.scanned ?? 0} events (inserted ${result?.inserted ?? 0}; running total ${scanned}), checkpoint now ${checkpoint}`);
+  }
+  return { scanned, inserted, lastBlock: checkpoint };
 }
