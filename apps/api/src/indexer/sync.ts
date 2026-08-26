@@ -11,7 +11,6 @@ export function startIndexerSync(pool: Pool): SyncHandle {
   const rpcUrl = process.env.RPC_URL;
   const intervalMs = Number(process.env.SYNC_INTERVAL_MS ?? 60000);
 
-  let timer: ReturnType<typeof setInterval> | undefined;
   let running = false;
 
   const provider = rpcUrl
@@ -56,7 +55,7 @@ export function startIndexerSync(pool: Pool): SyncHandle {
       });
   };
 
-  timer = setInterval(run, intervalMs);
+  const timer = setInterval(run, intervalMs);
   run();
 
   return {
