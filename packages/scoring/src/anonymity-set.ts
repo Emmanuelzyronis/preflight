@@ -9,5 +9,5 @@ export function estimateAnonymitySet(events: PoolEvent[], token: string, amount:
     return true;
   };
   const count = (ms: number) => events.filter(e => inBand(e) && now - e.timestamp.getTime() <= ms).length;
-  return { token, amount: amount.toString(), toleranceBps, within24h: count(windowMs || 86400000), within7d: count(Math.max(windowMs || 86400000, 7 * 86400000)) };
+  return { token, amount: amount.toString(), toleranceBps, within24h: count(86400000), within7d: count(7 * 86400000) };
 }
