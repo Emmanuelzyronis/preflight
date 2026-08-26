@@ -95,6 +95,10 @@ npm run lint
 npm test
 ```
 
+## Known Vulnerabilities
+
+`npm audit` currently reports 8 findings, all transitive through development and test tooling. `starknet-devnet` includes a `decompress` dependency with no upstream fix available, while the Vite/esbuild development-server issue requires a breaking major-version upgrade. None of these findings are in the runtime path shipped to users. Revisit this inventory after the sprint deadline.
+
 ## License
 
 MIT
