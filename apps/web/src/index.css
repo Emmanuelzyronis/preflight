@@ -26,7 +26,7 @@ body {
 }
 
 .intro {
-	width: min(100%, 44rem);
+	width: min(100%, 70rem);
 	padding: clamp(2rem, 6vw, 4.5rem);
 	border-left: 5px solid #d2633d;
 	background: rgba(255, 255, 255, 0.62);
@@ -84,3 +84,6 @@ h1 {
 	font-size: 0.95rem;
 	line-height: 1.4;
 }
+
+label { display: flex; flex-direction: column; gap: 0.45rem; font-family: 'Trebuchet MS', sans-serif; font-size: 0.85rem; font-weight: 700; }
+.field { box-sizing: border-box; width: 100%; border: 1px solid #b9c9ba; border-radius: 0.5rem; background: #fff; padding: 0.75rem; font: inherit; font-weight: 400; color: #17211b; }

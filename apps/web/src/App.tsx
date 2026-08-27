@@ -1,4 +1,4 @@
-import { Report } from './pages/Report';
+import { Home } from './pages/Home';
 
 export function App() {
   return (
@@ -11,9 +11,9 @@ export function App() {
         </p>
         <div className="status" role="status">
           <span className="status-dot" aria-hidden="true" />
-          Day 1 scaffold is online
+          Day 5 report UI is online
         </div>
-        <Report modeled={false} />
+        <Home />
       </section>
     </main>
   );

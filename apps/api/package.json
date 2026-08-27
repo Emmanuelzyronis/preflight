@@ -10,6 +10,7 @@
     "db:reset": "tsx src/indexer/reset.ts"
   },
   "dependencies": {
+    "@fastify/cors": "^11.0.0",
     "@preflight/scoring": "0.1.0",
     "@preflight/shared-types": "0.1.0",
     "@starkware-libs/starknet-privacy-sdk": "0.14.3-rc.5",

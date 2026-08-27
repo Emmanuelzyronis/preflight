@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": { "dev": "vite", "build": "tsc -b && vite build", "typecheck": "tsc -p tsconfig.json" },
-  "dependencies": { "react": "^18.3.0", "react-dom": "^18.3.0" },
+  "dependencies": { "@preflight/scoring": "0.1.0", "@preflight/sdk-hook": "0.1.0", "@preflight/shared-types": "0.1.0", "react": "^18.3.0", "react-dom": "^18.3.0", "starknet": "10.5.0" },
   "devDependencies": { "@types/react": "^18.3.0", "@types/react-dom": "^18.3.0", "@vitejs/plugin-react": "^4.3.0", "autoprefixer": "^10.4.0", "postcss": "^8.4.0", "tailwindcss": "^3.4.0", "vite": "^5.4.0" }
 }

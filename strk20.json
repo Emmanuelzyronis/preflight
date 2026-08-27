@@ -1,0 +1,9 @@
+{
+  "network": "mainnet",
+  "poolAddress": "0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a",
+  "demoTransactions": {
+    "shield": { "amountBaseUnits": "238", "transactionHash": "TODO_RUN_DEMO_SCRIPT" },
+    "privateTransfer": { "amountBaseUnits": "100", "transactionHash": "TODO_RUN_DEMO_SCRIPT" },
+    "unshield": { "amountBaseUnits": "50", "transactionHash": "TODO_RUN_DEMO_SCRIPT" }
+  }
+}

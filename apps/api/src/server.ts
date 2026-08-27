@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
 import { healthRoutes } from './routes/health.js';
 import { reportRoutes } from './routes/report.js';
 import { simulateRoutes } from './routes/simulate.js';
@@ -7,6 +8,7 @@ import { startIndexerSync } from './indexer/sync.js';
 
 export async function buildServer(): Promise<ReturnType<typeof Fastify>> {
   const app = Fastify({ logger: true });
+  await app.register(cors, { origin: process.env.WEB_ORIGIN ?? 'http://localhost:5173' });
   await app.register(healthRoutes);
   await app.register(simulateRoutes);
   await app.register(reportRoutes);
