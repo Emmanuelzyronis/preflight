@@ -95,7 +95,9 @@ npm install
 npm run dev
 ```
 
-The empty Vite application is served at `http://localhost:5173`. The Fastify API is served at `http://localhost:3001`; `GET /health` returns:
+The Vite application is served at `http://localhost:5173`. The Fastify API is served at `http://localhost:3001`; `GET /health` returns:
+
+For a Codespaces public-port session, create `apps/web/.env` with `VITE_API_URL=https://YOUR_CODESPACE_NAME-3001.app.github.dev`, replacing `YOUR_CODESPACE_NAME` with the hostname shown for forwarded port 3001. Set `WEB_ORIGINS=https://YOUR_CODESPACE_NAME-5173.app.github.dev` in the API environment (or leave `ALLOW_CODESPACES_ORIGINS=true` enabled for matching forwarded 5173 URLs), then restart both dev servers so Vite embeds the API URL.
 
 ```json
 {"status":"ok"}

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "node --env-file-if-exists=.env --import tsx --watch src/server.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "tsx test/setup-database.ts && vitest run",
     "db:reset": "tsx src/indexer/reset.ts"
